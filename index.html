@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <div><input type="text" size="30"></input></div>
+    <canvas id="myCanvas" width="1024" height="728" style="border:1px dotted;float:left"></canvas>
+    <script>
+        var selectorValue = 1;
+        function changeSelector(val) {
+            switch (val) {
+                case 'rect':
+                    selectorValue = 1;
+                    break;
+                case 'tri':
+                    selectorValue = 2;
+                    break;
+                default:
+                    selectorValue = -1;
+            }
+            alert('changeSelector(' + val + ') called')
+        }
+        function clearCanvas(canvas) {
+            var context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            alert('Canvas cleared!');
+        }
+        function writeMessage(canvas, message) {
+            var context = canvas.getContext('2d');
+            context.clearRect(0, 0, 270, 40);
+            context.font = '18pt Calibri';
+            context.fillStyle = 'black';
+            context.fillText(message, 10, 25);
+            //context.fillRect(100, 100, 20, 20);
+            //addRect(canvas, 200, 200);
+        }
+        function getMousePos(canvas, evt) {
+            var rect = canvas.getBoundingClientRect();
+
+            return {
+                x: evt.clientX - rect.left,
+                y: evt.clientY - rect.top
+            };
+        }
+        function addRect(canvas, xpos, ypos, size) {
+            var context = canvas.getContext('2d');
+            var width = size;
+            context.fillStyle = '#FF7700';
+            context.fillRect(xpos, ypos, width, width);
+        }
+        function addTri(canvas, xpos, ypos, size) {
+            var context = canvas.getContext('2d');
+            width = size;
+            height = width * (0.866);
+            context.fillStyle = '#FF0000';
+            context.beginPath();
+            context.moveTo(xpos - (width / 2), ypos);
+            context.lineTo(xpos + width / 2, ypos);
+            context.lineTo(xpos, ypos + height);
+            context.fill();
+        }
+        //function square(size, xpos, ypos){
+
+        //}
+        // event.type must be keypress
+        function getChar(event) {
+            if (event.which == null) {
+                return String.fromCharCode(event.keyCode); // IE
+            } else if (event.which != 0 && event.charCode != 0) {
+                return String.fromCharCode(event.which);   // the rest
+            } else {
+                return null; // special key
+            }
+        }
+
+        var canvaso = document.getElementById('myCanvas');
+
+
+        canvaso.addEventListener('mousedown', function (evt) {
+            var mousePos = getMousePos(canvaso, evt);
+            var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
+            writeMessage(canvaso, message);
+            if(selectorValue === 1)    
+                addRect(canvaso, mousePos.x, mousePos.y, 50);
+            else if(selectorValue === 2)    
+                addTri(canvaso, mousePos.x, mousePos.y, 50);
+        }, false);
+    </script>
+      <div>
+        <form>
+            <input type="button" id="rect-button" onclick="changeSelector('rect')" value="Select Rectangle" />
+            <input type="button" id="tri-button" onclick="changeSelector('tri')" value="Select Triangle" />
+            <input type="button" id="clear-button" onclick="clearCanvas(canvaso)" value="Clear Canvas" />
+        </form>
+      </div>
+  </body>
+</html>
