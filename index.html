@@ -12,6 +12,14 @@
     <div><input type="text" size="30"></input></div>
     <canvas id="myCanvas" width="1024" height="728" style="border:1px dotted;float:left"></canvas>
     <script>
+        shape_id_list = [0];
+        function addID() {
+            var prev = shape_id_list.pop();
+            shape_id_list.push(prev);
+            next = prev + 1;
+            shape_id_list.push(next);
+            return next;
+        }
         var selectorValue = 1;
         function changeSelector(val) {
             switch (val) {
@@ -37,8 +45,6 @@
             context.font = '18pt Calibri';
             context.fillStyle = 'black';
             context.fillText(message, 10, 25);
-            //context.fillRect(100, 100, 20, 20);
-            //addRect(canvas, 200, 200);
         }
         function getMousePos(canvas, evt) {
             var rect = canvas.getBoundingClientRect();
@@ -65,30 +71,42 @@
             context.lineTo(xpos, ypos + height);
             context.fill();
         }
-        //function square(size, xpos, ypos){
-
-        //}
-        // event.type must be keypress
-        function getChar(event) {
-            if (event.which == null) {
-                return String.fromCharCode(event.keyCode); // IE
-            } else if (event.which != 0 && event.charCode != 0) {
-                return String.fromCharCode(event.which);   // the rest
-            } else {
-                return null; // special key
-            }
+        function square(xpos, ypos) {
+            this.id = addID();
+            this.xpos = xpos;
+            this.ypos = ypos;
+            this.angle = 0;
+            this.getID = getID;
+            this.getPos = getPos;
+        }
+        function triangle(xpos, ypos) {
+            this.id = addID();
+            this.xpos = xpos;
+            this.ypos = ypos;
+            this.angle = 0;
+            this.getID = getID;
+            this.getPos = getPos;
+        }
+        function getID() {
+            return this.id;
+        }
+        function getPos() {
+            return [this.xpos, this.ypos];
         }
 
-        var canvaso = document.getElementById('myCanvas');
+        var news = new square(100, 100);
+        var newt = new triangle(200, 100);
+        alert('shape_id_list = ' + shape_id_list);
 
+        var canvaso = document.getElementById('myCanvas');
 
         canvaso.addEventListener('mousedown', function (evt) {
             var mousePos = getMousePos(canvaso, evt);
             var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
             writeMessage(canvaso, message);
-            if(selectorValue === 1)    
+            if (selectorValue === 1)
                 addRect(canvaso, mousePos.x, mousePos.y, 50);
-            else if(selectorValue === 2)    
+            else if (selectorValue === 2)
                 addTri(canvaso, mousePos.x, mousePos.y, 50);
         }, false);
     </script>
