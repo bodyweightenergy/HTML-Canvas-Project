@@ -12,13 +12,23 @@
     <div><input type="text" size="30"></input></div>
     <canvas id="myCanvas" width="1024" height="728" style="border:1px dotted;float:left"></canvas>
     <script>
-        shape_id_list = [0];
-        function addID() {
-            var prev = shape_id_list.pop();
-            shape_id_list.push(prev);
-            next = prev + 1;
-            shape_id_list.push(next);
-            return next;
+
+
+        function addShape(shape) {
+            shape_list.push(shape);
+        }
+
+        function add30deg() {
+            drawAngle = drawAngle + (Math.PI / 6);
+            updateAngleText();
+        }
+        function sub30deg() {
+            drawAngle = drawAngle - (Math.PI / 6);
+            updateAngleText();
+        }
+        function updateAngleText() {
+            var angleBox = document.getElementById("angletext");
+            angleBox.value = drawAngle * (180 / Math.PI);
         }
         var selectorValue = 1;
         function changeSelector(val) {
@@ -32,15 +42,14 @@
                 default:
                     selectorValue = -1;
             }
-            alert('changeSelector(' + val + ') called')
         }
         function clearCanvas(canvas) {
             var context = canvas.getContext('2d');
             context.clearRect(0, 0, canvas.width, canvas.height);
-            alert('Canvas cleared!');
         }
         function writeMessage(canvas, message) {
             var context = canvas.getContext('2d');
+            context.restore();
             context.clearRect(0, 0, 270, 40);
             context.font = '18pt Calibri';
             context.fillStyle = 'black';
@@ -48,55 +57,58 @@
         }
         function getMousePos(canvas, evt) {
             var rect = canvas.getBoundingClientRect();
-
             return {
                 x: evt.clientX - rect.left,
                 y: evt.clientY - rect.top
             };
         }
-        function addRect(canvas, xpos, ypos, size) {
+        function addRect(canvas, xpos, ypos, angle, size) {
             var context = canvas.getContext('2d');
             var width = size;
+            context.save();
             context.fillStyle = '#FF7700';
-            context.fillRect(xpos, ypos, width, width);
+            context.translate(xpos, ypos);
+            context.rotate(angle);
+            context.fillRect(0, 0, width, width);
+            context.restore();
         }
-        function addTri(canvas, xpos, ypos, size) {
+        function addTri(canvas, xpos, ypos, angle, size) {
             var context = canvas.getContext('2d');
             width = size;
             height = width * (0.866);
+            context.save();
             context.fillStyle = '#FF0000';
+            context.translate(xpos, ypos);
+            context.rotate(angle);
             context.beginPath();
-            context.moveTo(xpos - (width / 2), ypos);
-            context.lineTo(xpos + width / 2, ypos);
-            context.lineTo(xpos, ypos + height);
+            context.moveTo(-(width / 2), 0);
+            context.lineTo(width / 2, 0);
+            context.lineTo(0, height);
             context.fill();
+            context.restore();
         }
-        function square(xpos, ypos) {
-            this.id = addID();
+        function square(xpos, ypos, angle) {
             this.xpos = xpos;
             this.ypos = ypos;
-            this.angle = 0;
-            this.getID = getID;
-            this.getPos = getPos;
-        }
-        function triangle(xpos, ypos) {
-            this.id = addID();
-            this.xpos = xpos;
-            this.ypos = ypos;
-            this.angle = 0;
-            this.getID = getID;
-            this.getPos = getPos;
-        }
-        function getID() {
-            return this.id;
-        }
-        function getPos() {
-            return [this.xpos, this.ypos];
-        }
+            this.angle = angle;
+            this.getInfo = getInfo;
+            addShape(this);
 
-        var news = new square(100, 100);
-        var newt = new triangle(200, 100);
-        alert('shape_id_list = ' + shape_id_list);
+        }
+        function triangle(xpos, ypos, angle) {
+            this.xpos = xpos;
+            this.ypos = ypos;
+            this.angle = angle;
+            this.getInfo = getInfo;
+            addShape(this);
+        }
+        function getInfo() {
+            return "(" + this.xpos + "," + this.ypos + ") ang=" + this.angle;
+        }
+        //var shape_list = [new square(0, 0)];
+        var drawAngle = 0;
+        //alert("drawAngle(init)=" + drawAngle);
+
 
         var canvaso = document.getElementById('myCanvas');
 
@@ -104,10 +116,15 @@
             var mousePos = getMousePos(canvaso, evt);
             var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
             writeMessage(canvaso, message);
-            if (selectorValue === 1)
-                addRect(canvaso, mousePos.x, mousePos.y, 50);
-            else if (selectorValue === 2)
-                addTri(canvaso, mousePos.x, mousePos.y, 50);
+            switch (selectorValue) {
+                case 1:
+                    addRect(canvaso, mousePos.x, mousePos.y, drawAngle, 50);
+
+                    break;
+                case 2:
+                    addTri(canvaso, mousePos.x, mousePos.y, drawAngle, 50);
+                    break;
+            }
         }, false);
     </script>
       <div>
@@ -115,7 +132,12 @@
             <input type="button" id="rect-button" onclick="changeSelector('rect')" value="Select Rectangle" />
             <input type="button" id="tri-button" onclick="changeSelector('tri')" value="Select Triangle" />
             <input type="button" id="clear-button" onclick="clearCanvas(canvaso)" value="Clear Canvas" />
+            <input type="button" id="plus30-button" onclick="add30deg()" value="+30 deg" />
+            <input type="button" id="sub30-button" onclick="sub30deg()" value="-30 deg" />
         </form>
+      </div>
+      <div>
+        <textarea id="angletext">Default value</textarea>
       </div>
   </body>
 </html>
