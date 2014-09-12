@@ -12,23 +12,35 @@
     <div><input type="text" size="30"></input></div>
     <canvas id="myCanvas" width="1024" height="728" style="border:1px dotted;float:left"></canvas>
     <script>
-
+        shape_list = [];
 
         function addShape(shape) {
             shape_list.push(shape);
         }
+        function clearShapes() {
+            shape_list = [];
+        }
+        function findShape(xpos, ypos, angle) {
+            for (i = 0; i < shape_list.length; i++) {
+                if ((shape_list[i].xpos === xpos) && ((shape_list[i].ypos === ypos) && (shape_list.angle === angle))) {
+                    return shape_list[i];
+                    break;
+                }
+                else return null;
+            }
+        }
 
         function add30deg() {
-            drawAngle = drawAngle + (Math.PI / 6);
-            updateAngleText();
+            drawAngle = drawAngle + 30;
+            appendDebugText("Angle=" + drawAngle);
         }
         function sub30deg() {
-            drawAngle = drawAngle - (Math.PI / 6);
-            updateAngleText();
+            drawAngle = drawAngle - 30;
+            appendDebugText("Angle=" + drawAngle);
         }
-        function updateAngleText() {
-            var angleBox = document.getElementById("angletext");
-            angleBox.value = drawAngle * (180 / Math.PI);
+        function appendDebugText(message) {
+            var debugBox = document.getElementById("debugtext");
+            debugBox.value = debugBox.value + "\n" + message;
         }
         var selectorValue = 1;
         function changeSelector(val) {
@@ -46,6 +58,7 @@
         function clearCanvas(canvas) {
             var context = canvas.getContext('2d');
             context.clearRect(0, 0, canvas.width, canvas.height);
+            clearShapes();
         }
         function writeMessage(canvas, message) {
             var context = canvas.getContext('2d');
@@ -63,23 +76,25 @@
             };
         }
         function addRect(canvas, xpos, ypos, angle, size) {
+            square(xpos, ypos, angle);
             var context = canvas.getContext('2d');
             var width = size;
             context.save();
             context.fillStyle = '#FF7700';
             context.translate(xpos, ypos);
-            context.rotate(angle);
-            context.fillRect(0, 0, width, width);
+            context.rotate(angle * (Math.PI / 180));
+            context.fillRect(-width / 2, -width / 2, width, width);
             context.restore();
         }
         function addTri(canvas, xpos, ypos, angle, size) {
+            triangle(xpos, ypos, angle);
             var context = canvas.getContext('2d');
             width = size;
             height = width * (0.866);
             context.save();
             context.fillStyle = '#FF0000';
             context.translate(xpos, ypos);
-            context.rotate(angle);
+            context.rotate(angle * (Math.PI / 180));
             context.beginPath();
             context.moveTo(-(width / 2), 0);
             context.lineTo(width / 2, 0);
@@ -87,13 +102,39 @@
             context.fill();
             context.restore();
         }
+        function getC1(shape) {
+            var C1 = [shape.xpos - (global_size / 2), shape.ypos - (global_size / 2)];
+            return C1;
+        }
+        function getC2(shape) {
+            var C2 = [shape.xpos + (global_size / 2), shape.ypos - (global_size / 2)];
+            return C2;
+        }
+        function getC3(shape) {
+            var C3 = [shape.xpos - (global_size / 2), shape.ypos + (global_size / 2)];
+            return C3;
+        }
+        function getC4(shape) {
+            var C4 = [shape.xpos + (global_size / 2), shape.ypos + (global_size / 2)];
+            return C4;
+        }
+        function getT1(shape) {
+            var T1 = [shape.xpos - (global_size / 2), shape.ypos];
+            return T1;
+        }
+        function getT2(shape) {
+            var T2 = [shape.xpos + (global_size / 2), shape.ypos];
+            return T2;
+        }
+        function getT3(shape) {
+            var T3 = [shape.xpos, shape.ypos + (global_size * 0.866)];
+        }
         function square(xpos, ypos, angle) {
             this.xpos = xpos;
             this.ypos = ypos;
             this.angle = angle;
             this.getInfo = getInfo;
             addShape(this);
-
         }
         function triangle(xpos, ypos, angle) {
             this.xpos = xpos;
@@ -105,11 +146,9 @@
         function getInfo() {
             return "(" + this.xpos + "," + this.ypos + ") ang=" + this.angle;
         }
-        //var shape_list = [new square(0, 0)];
+
         var drawAngle = 0;
-        //alert("drawAngle(init)=" + drawAngle);
-
-
+        var global_size = 50;
         var canvaso = document.getElementById('myCanvas');
 
         canvaso.addEventListener('mousedown', function (evt) {
@@ -118,11 +157,10 @@
             writeMessage(canvaso, message);
             switch (selectorValue) {
                 case 1:
-                    addRect(canvaso, mousePos.x, mousePos.y, drawAngle, 50);
-
+                    addRect(canvaso, mousePos.x, mousePos.y, drawAngle, global_size);
                     break;
                 case 2:
-                    addTri(canvaso, mousePos.x, mousePos.y, drawAngle, 50);
+                    addTri(canvaso, mousePos.x, mousePos.y, drawAngle, global_size);
                     break;
             }
         }, false);
@@ -137,7 +175,7 @@
         </form>
       </div>
       <div>
-        <textarea id="angletext">Default value</textarea>
+        <textarea id="debugtext" rows="50" cols="60">0</textarea>
       </div>
   </body>
 </html>
